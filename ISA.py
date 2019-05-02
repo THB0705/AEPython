@@ -39,11 +39,37 @@ def menuInput(startUp):
         print("    **** ISA Calculator ****")
     
     height = 0
+    unit = "meter"
 
     while True:
-        heightInput = input("\nEnter height: ")
+        unitIn = input("In what units will you enter your height?\n1. Meters\n2. Feet\n3. Flight Levels (FL)\n")
         try:
-            height = float(heightInput)
+            unitInTemp = int(unitIn)
+            if(unitInTemp > 0 and unitInTemp < 4):
+                if(unitInTemp == 1):
+                    unit = "meter"
+                    break
+                elif(unitInTemp == 2):
+                    unit = "feet"
+                    break
+                elif(unitInTemp == 3):
+                    unit = "FL"
+                    break
+            else:
+                print("You did not enter a number between 1 and 3.")
+        except ValueError:
+            print("You did not enter a number. Please try again.")
+
+    while True:
+        heightInput = input("\nEnter height[m]: ")
+        try:
+            heightConversion = float(heightInput)
+            if(unit == "meter"):
+                height = heightConversion
+            elif(unit == "feet"):
+                height = heightConversion*0.3048
+            elif(unit == "FL"):
+                height = heightConversion*0.3048*100
             if(height < 0 or height > 86000):
                 print("The range of heights we can calculate atmospheres for is 0m to 86000m. Enter a number that fits the range.")
             else:
@@ -84,7 +110,13 @@ def heightAnalysis(height):
     
     rhoH = pressureH/R/temperatureH
 
-    print("\n***\nHeight: " + str(height) + " m.\nLayer: " + a_boundaries_names[layer] + ".\nTemperature: " + str(round(temperatureH,2)) + " K.\nPressure: " + str(round(pressureH,2)) + " Pa.\nDensity: " + str(round(rhoH,3)) + " kg/m^3.")
+    print(
+        "\n***\n"+
+        "Height:      " + str(height) + " m.\n" + 
+        "Layer:       " + a_boundaries_names[layer] + ".\n"+
+        "Temperature: " + str(round(temperatureH,2)) + " K.\n"+
+        "Pressure:    " + str(round(pressureH,2)) + " Pa.\n"+
+        "Density:     " + str(round(rhoH,4)) + " kg/m^3.")
 
 #specific functions
 def isothermalLayer(p_0, T, delta_H):
