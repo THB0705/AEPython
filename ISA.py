@@ -22,14 +22,13 @@ def generateBaseLayers():
     while layerG < 7:
         if(layerG == 0):
             T_boundaries[layerG+1] = T_boundaries[layerG] + a_layer[layerG]*a_boundaries[layerG]
-        else:
+        elif(layerG != 0):
             T_boundaries[layerG+1] = T_boundaries[layerG] + a_layer[layerG]*(a_boundaries[layerG]-a_boundaries[layerG-1])
 
         if(a_layer[layerG] == 0):
-            P_boundaries[layerG+1] = isothermalLayer(P_boundaries[layerG], T_boundaries[layerG], 1000*(a_boundaries[layerG+1]-a_boundaries[layerG]))
-        else:
+            P_boundaries[layerG+1] = isothermalLayer(P_boundaries[layerG], T_boundaries[layerG], 1000*(a_boundaries[layerG]-a_boundaries[layerG-1]))
+        elif(a_layer[layerG] != 0):
             P_boundaries[layerG+1] = normalLayer(P_boundaries[layerG], T_boundaries[layerG], T_boundaries[layerG+1], a_layer[layerG]/1000)
-
         #print("Layer No.: " + str(layerG) + ". T_0: " + str(round(T_boundaries[layerG],2)) + " K. P_0: " + str(round(P_boundaries[layerG],2)) + " Pa.")
 
         layerG += 1
@@ -37,7 +36,7 @@ def generateBaseLayers():
 #input loop
 def menuInput(startUp):
     if startUp == True:
-        print("    **** ISA Calculator Troposphere ****")
+        print("    **** ISA Calculator ****")
     
     height = 0
 
@@ -45,13 +44,16 @@ def menuInput(startUp):
         heightInput = input("\nEnter height: ")
         try:
             height = float(heightInput)
-            break
+            if(height < 0 or height > 86000):
+                print("The range of heights we can calculate atmospheres for is 0m to 86000m. Enter a number that fits the range.")
+            else:
+                break
         except ValueError:
-            print("Error, you did not enter a number. Try again.")
+            print("Error, make sure you enter a number. Try again please.")
     
     return height
 
-#specific Data Generation, combine following two functions  
+#specific Data Generation
 
 def heightAnalysis(height):
     x = 0
@@ -61,8 +63,7 @@ def heightAnalysis(height):
         if(height <= boundary):
             layer = x
             break
-        x += 1
-        
+        x += 1   
 
     pressureH = 0
     rhoH = 0
@@ -72,18 +73,18 @@ def heightAnalysis(height):
         temperatureH = T_boundaries[layer] + a_layer[layer]/1000*height
         if(a_layer[layer] == 0):
             pressureH = isothermalLayer(P_boundaries[layer], T_boundaries[layer], 1000*a_boundaries[layer])
-        else:
+        elif(a_layer[layer] != 0):
             pressureH = normalLayer(P_boundaries[layer], T_boundaries[layer], temperatureH, a_layer[layer]/1000)
-    else:
+    elif(layer != 0):
         temperatureH = T_boundaries[layer] + a_layer[layer]/1000*(height-a_boundaries[layer-1]*1000)
         if(a_layer[layer] == 0):
             pressureH = isothermalLayer(P_boundaries[layer], T_boundaries[layer], (height-1000*a_boundaries[layer-1]))
-        else:
+        elif(a_layer[layer] != 0):
             pressureH = normalLayer(P_boundaries[layer], T_boundaries[layer], temperatureH, a_layer[layer]/1000)
     
     rhoH = pressureH/R/temperatureH
 
-    print("Layer: " + a_boundaries_names[layer] + ".\nHeight: " + str(height) + " m.\nTemperature: " + str(round(temperatureH,2)) + " K.\nPressure: " + str(round(pressureH,2)) + " Pa.\nDensity: " + str(round(rhoH,2)) + " kg/m^3.")
+    print("\n***\nHeight: " + str(height) + " m.\nLayer: " + a_boundaries_names[layer] + ".\nTemperature: " + str(round(temperatureH,2)) + " K.\nPressure: " + str(round(pressureH,2)) + " Pa.\nDensity: " + str(round(rhoH,3)) + " kg/m^3.")
 
 #specific functions
 def isothermalLayer(p_0, T, delta_H):
